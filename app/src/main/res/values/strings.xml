@@ -1,4 +1,8 @@
 <resources>
     <string name="app_name">Firebase</string>
-    <string name="button">Get message Result</string>
+    <string name="button">save</string>
+    <string name="textView">DataBase</string>
+    <string name="editText">Edit text second</string>
+    <string name="googleButton">Google login</string>
+    <string name="logout">Logout</string>
 </resources>
