@@ -6,9 +6,6 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
-import androidx.activity.result.ActivityResultCallback
-import androidx.activity.result.ActivityResultLauncher
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.result.contract.ActivityResultContracts.StartActivityForResult
 import androidx.databinding.DataBindingUtil
 import com.example.firebase.databinding.ActivityMainBinding
@@ -22,11 +19,10 @@ import com.google.firebase.database.ktx.database
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.messaging.FirebaseMessaging
 import com.google.android.gms.common.api.ApiException
-import android.R.attr.data
-import android.R.attr.id
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.GoogleAuthProvider
-import java.lang.Error
+import com.facebook.CallbackManager
+import com.facebook.FacebookCallback
+import com.facebook.FacebookException
+import com.facebook.login.LoginResult
 
 
 class MainActivity : AppCompatActivity() {
@@ -39,26 +35,23 @@ class MainActivity : AppCompatActivity() {
     private lateinit var googleSignInClient : GoogleSignInClient
     private lateinit var task : Task<GoogleSignInAccount>
     private lateinit var account : GoogleSignInAccount
-    private lateinit var auth : FirebaseAuth
+    private lateinit var callBackManager : CallbackManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = DataBindingUtil.setContentView(this,R.layout.activity_main)
+
+        // dataBase
         fireBaseInstance = FirebaseDatabase.getInstance()
         Firebase.database.setPersistenceEnabled(true)
-
         fireBaseDataBaseReference = fireBaseInstance.reference
         childReference = fireBaseDataBaseReference.child("message")
-
         childReference.keepSynced(true)
 
-        requestGoogleSignIn()
         binding.messageButton.setOnClickListener {
             childReference.setValue(binding.editTextView2.text.toString())
         }
-        binding.googleButton.setOnClickListener {
-            signIn()
-        }
+
         // firebase messaging
         FirebaseMessaging.getInstance().token.addOnCompleteListener {
             if(!it.isSuccessful ){
@@ -68,6 +61,30 @@ class MainActivity : AppCompatActivity() {
             Log.i("token", token)
             //Toast.makeText(this, token,Toast.LENGTH_SHORT).show()
         }
+
+        //
+        requestGoogleSignIn()
+        binding.googleButton.setOnClickListener {
+            signIn()
+        }
+
+
+        callBackManager = CallbackManager.Factory.create()
+        binding.facebookLoginButton.setPermissions(listOf("email"))
+        binding.facebookLoginButton.registerCallback(callBackManager , object : FacebookCallback<LoginResult>{
+            override fun onCancel() {
+
+            }
+
+            override fun onError(error: FacebookException) {
+
+            }
+
+            override fun onSuccess(result: LoginResult) {
+
+            }
+        })
+
     }
 
 
@@ -86,19 +103,16 @@ class MainActivity : AppCompatActivity() {
     private var resultLauncher = registerForActivityResult(StartActivityForResult()) { result ->
         if (result.resultCode == Activity.RESULT_OK) {
             task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
-          //  val account = task.getResult(ApiException::class.java)
-            Toast.makeText(this,"hey",Toast.LENGTH_SHORT).show()
             handleSignInResult(task)
+
         }
     }
 
     private fun handleSignInResult(task: Task<GoogleSignInAccount>) {
         try {
             account = task.getResult(ApiException::class.java)
-            val intent = Intent(this,SecondActivity::class.java)
-            intent.putExtra("name",account.displayName)
-            intent.putExtra("email",account.email)
-            startActivity(intent)
+            Toast.makeText(this,"hey",Toast.LENGTH_SHORT).show()
+            startActivity(Intent(this,SecondActivity::class.java))
         } catch (e: ApiException) {
             // The ApiException status code indicates the detailed failure reason.
             // Please refer to the GoogleSignInStatusCodes class reference for more information.
@@ -106,34 +120,4 @@ class MainActivity : AppCompatActivity() {
 
     }
 
-
-//    private fun handleSignInResult(idToken: String?) {
-//        val credential = GoogleAuthProvider.getCredential(idToken,null)
-//        auth.signInWithCredential(credential)
-//            .addOnCompleteListener(this){
-//                if (it.isSuccessful){
-//                    Toast.makeText(this,"successfull",Toast.LENGTH_SHORT).show()
-//                    val intent = Intent(this,SecondActivity::class.java)
-//                    startActivity(intent)
-//                    finish()
-//                }
-//                else{
-//                    Toast.makeText(this,"Failure",Toast.LENGTH_SHORT).show()
-//                }
-//            }
-//    }
-
-
-
-
-//    override fun onStart() {
-//        super.onStart()
-//        val googleSignInCheck = GoogleSignIn.getLastSignedInAccount(this)
-//        if (googleSignInCheck != null){
-//            val intent = Intent(this,SecondActivity::class.java)
-//            intent.putExtra("name",googleSignInCheck.displayName)
-//            intent.putExtra("email",googleSignInCheck.email)
-//            startActivity(intent)
-//        }
-//    }
 }

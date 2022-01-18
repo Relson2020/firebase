@@ -4,5 +4,9 @@
     <string name="textView">DataBase</string>
     <string name="editText">Edit text second</string>
     <string name="googleButton">Google login</string>
+    <string name="facebookButton">Facebook Login</string>
     <string name="logout">Logout</string>
+    <string name="facebook_app_id">193798962929627</string>
+    <string name="fb_login_protocol_scheme">fb193798962929627</string>
+
 </resources>
